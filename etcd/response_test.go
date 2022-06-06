@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ugorji/go/fadd/codec"
+	"github.com/ugorji/go/codec"
 )
 
 func createTestNode(size int) *Node {
