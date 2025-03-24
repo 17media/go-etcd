@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -30,10 +28,6 @@ const (
 	defaultBufferSize = 10
 )
 
-func init() {
-	rand.Seed(int64(time.Now().Nanosecond()))
-}
-
 type Config struct {
 	CertFile    string        `json:"certFile"`
 	KeyFile     string        `json:"keyFile"`
@@ -48,8 +42,8 @@ type credentials struct {
 }
 
 type Client struct {
-	config      Config   `json:"config"`
-	cluster     *Cluster `json:"cluster"`
+	config      Config
+	cluster     *Cluster
 	httpClient  *http.Client
 	credentials *credentials
 	transport   *http.Transport
@@ -146,7 +140,7 @@ func NewClientFromFile(fpath string) (*Client, error) {
 func NewClientFromReader(reader io.Reader) (*Client, error) {
 	c := new(Client)
 
-	b, err := ioutil.ReadAll(reader)
+	b, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +257,7 @@ func (c *Client) AddRootCA(caCert string) error {
 		return errors.New("Client has not been initialized yet!")
 	}
 
-	certBytes, err := ioutil.ReadFile(caCert)
+	certBytes, err := os.ReadFile(caCert)
 	if err != nil {
 		return err
 	}
@@ -331,7 +325,7 @@ func (c *Client) internalSyncCluster(machines []string) bool {
 				// try another machine in the cluster
 				continue
 			}
-			b, err := ioutil.ReadAll(resp.Body)
+			b, err := io.ReadAll(resp.Body)
 			resp.Body.Close()
 			if err != nil {
 				// try another machine in the cluster
@@ -339,7 +333,7 @@ func (c *Client) internalSyncCluster(machines []string) bool {
 			}
 			members = string(b)
 		} else {
-			b, err := ioutil.ReadAll(resp.Body)
+			b, err := io.ReadAll(resp.Body)
 			resp.Body.Close()
 			if err != nil {
 				// try another machine in the cluster
